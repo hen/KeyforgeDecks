@@ -47,19 +47,25 @@ fn lines_from_file(filename: impl AsRef<Path>) -> Vec<String> {
 }
 
 fn save_decks(api_key: &str, decks: Vec<String>, save_dir: &str) -> Result<(), Error> {
+    let mut count = 1;
     // loop over decks
     for deck in decks {
-        save_deck(api_key, &deck, save_dir);
+        if count <= 25 {
+            let saved = save_deck(api_key, &deck, save_dir)?;
+            if saved {
+                count += 1;
+            }
+        }
     }
 
     Ok(())
 }
 
-fn save_deck(api_key: &str, deck: &str, save_dir: &str) -> Result<(), Error> {
+fn save_deck(api_key: &str, deck: &str, save_dir: &str) -> Result<bool, Error> {
     let save_path = Path::new(save_dir).join(deck);
     if save_path.exists() {
         println!("Skipping: {}", save_path.to_string_lossy());
-        return Ok(());
+        return Ok(false);
     }
 
     let request_url = format!("https://decksofkeyforge.com/public-api/v3/decks/{}", deck);
@@ -94,5 +100,5 @@ fn save_deck(api_key: &str, deck: &str, save_dir: &str) -> Result<(), Error> {
     }
 
 
-    Ok(())
+    Ok(true)
 }
